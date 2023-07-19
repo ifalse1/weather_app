@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Weather Forecast</title>
+        <link rel="stylesheet" href="style.css">
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    </head>
+    <body>
+        <div class="stuff-box white">
+            <h1>Vue.JS Weather App</h1>
+            <p><a href="plan.html">My Plan</a></p>
+        </div>
+        <div id="app">
+            <div class="stuff-box blue">
+                <h3>Your location</h3>
+                <p v-if = "location !== undefined">
+                    You are located in {{location.city}}, {{location.region}}, {{location.country}} at coordinates ({{location.latitude}}, {{location.longitude}})
+                </p>
+                <p v-else>
+                    {{content}}
+                </p>
+            </div>
+            <div class="stuff-box yellow">
+                <h3>Current Conditions</h3>
+                <p>Current weather conditions on {{date}}</p>
+                <ul v-if="curr_weather !== undefined">
+                    <li>Current temperature {{curr_weather.main.temp}}&#8457;</li>
+                    <li>High {{curr_weather.main.temp_max}}&#8457;</li>
+                    <li>Low {{curr_weather.main.temp_min}}&#8457;</li>
+                    <li>{{curr_weather.weather[0].description}} </li>
+                    <li>{{curr_weather.main.humidity}}% humidity</li>
+                    <li>{{curr_weather.main.pressure}} hPa pressure</li>
+                </ul>
+                <p v-else>
+                    {{msg}}
+                </p>
+            </div>
+            <div class="stuff-box cyan">
+                <h3>5 day 3-hour forecast</h3>
+                <p><span style="color:red">{{unlikely}} unlikely</span> <span style="color:grey">{{nuetral}} nuetral</span> <span style="color:green">{{likely}} likely</span></p>
+                <div v-if="weather !== undefined" v-for="(forecast, idx) in weather.list" style="cursor: pointer" class="stuff-box" :class="voteClass" v-on:click="toggle" :data-index="idx">
+                    <h4>Conditions for {{readify(forecast.dt)}}</h4>
+                    <ul>
+                        <li>Temperature {{forecast.main.temp}}&#8457;</li>
+                        <li>{{forecast.weather[0].description}}</li>
+                        <li>{{forecast.main.humidity}}% humidity</li>
+                        <li>{{forecast.main.pressure}} hPa</li>
+                    </ul>
+                </div>
+                <div v-else>
+                    {{msg}}
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    date: '',
+                    content: 'Fetching data',
+                    msg: 'Loading',
+                    votes: undefined,
+                    location: undefined,
+                    curr_weather: undefined,
+                    weather: undefined,
+                };
+            },
+            created() {
+                console.log("created");
+                // Fetching ip location
+                fetch('https://ipgeolocation.abstractapi.com/v1/?api_key=ce4ee372d01c4fd68aa1d85767830592&fields=country,city,longitude,latitude,region')
+                    .then(response => response.json())
+                    .then(json => {
+                        console.log(json);
+                        this.location = json; // Storing location
+                        // Fetching current weather
+                        return fetch(`http://api.openweathermap.org/data/2.5/weather?lat=${this.location.latitude}&lon=${this.location.longitude}&appid=f2f7fd97c59e0a44b4f74dae34355afc&units=imperial`)
+                    })
+                    .catch(err => {
+                        console.log(err); // Error with location
+                        this.content = "There was an error finding your location"
+                    })
+                    .then(response => response.json())
+                    .then(json => {
+                        console.log(json);
+                        this.curr_weather = json; // Storing current weather
+                        // Fetching 5 day forecast
+                        return fetch(`http://api.openweathermap.org/data/2.5/forecast?lat=${this.location.latitude}&lon=${this.location.longitude}&appid=f2f7fd97c59e0a44b4f74dae34355afc&units=imperial`)
+                    })
+                    .catch(err => {
+                        console.log(err); //Error with current weather
+                        this.msg = "There was an error retrieving the weather"
+                    })
+                    .then(response => response.json())
+                    .then(json => {
+                        console.log(json);
+                        this.weather = json; // Storing error with forecast
+                    })
+                    .catch(err => {
+                        console.log(err); //Error with 5 day forecast
+                        this.msg = "There was an error retrieving the weather"
+                    })
+                this.votes = Array(40).fill(0); // Creates array for tracking votes
+                this.getDate(); // setInterval(this.getDate, 1000) if you want it to count dynamically
+            },
+            methods: {
+                toggle(ev) {
+                    let idx = ev.currentTarget.getAttribute('data-index');
+                    console.log(ev.class);
+                    let color;
+                    console.log(`You clicked ${idx}`);
+                    // Sets votes in array
+                    if (this.votes[idx] == 2) {
+                        this.votes[idx] = 0;
+                    } else {
+                        this.votes[idx]++;
+                    }
+                    console.log(this.votes[idx]);
+                    // Returns class based on array votes
+                    switch(this.votes[idx]) {
+                        case 1:
+                            ev.currentTarget.setAttribute("class", "stuff-box green");
+                            break;
+                        case 2:
+                            ev.currentTarget.setAttribute("class", "stuff-box red");
+                            break;
+                        default:
+                            ev.currentTarget.setAttribute("class", "stuff-box black");
+                    }
+                },
+                getDate: function() {
+                    const timestamp = new Date();
+                    let date = (timestamp.getMonth() + 1) + "/" + timestamp.getDate() + "/" + timestamp.getFullYear();
+                    let time = ((timestamp.getHours() + 24) % 12 || 12) + ":" + this.pad(timestamp.getMinutes()) + ":" + this.pad(timestamp.getSeconds()) + " " + this.pm(timestamp.getHours());
+                    this.date = date + ", " + time;
+                },
+                readify(t) {
+                      let timestamp = new Date(t * 1000);
+                      let date = (timestamp.getMonth() + 1) + "/" + timestamp.getDate() + "/" + timestamp.getFullYear();
+                      let hours = (timestamp.getHours() + 24) % 12 || 12;
+                      return date + ", " + hours + ":00:00 " + this.pm(timestamp.getHours());
+                },
+                pad(n) {
+                    return (n < 10) ? '0' + n : n;
+                },
+                pm(h) {
+                    if (h == 24) {
+                        return "AM";
+                    }
+                    else if (h >= 12) {
+                        return "PM";
+                    } else {
+                        return "AM";
+                    }
+                }
+            },
+            computed: {
+                voteClass() {
+                    let nuetral = true;
+                    let likely = false;
+                    let unlikely = false;
+                    return {
+                        black: nuetral,
+                        red: unlikely,
+                        green: likely,
+                    }
+                },
+                unlikely() {
+                    let c = 0;
+                    for (let i in this.votes) {
+                        if (this.votes[i] == 2) {
+                            c++
+                        }
+                    }
+                    return c;
+                },
+                likely() {
+                    let c = 0;
+                    for (let i in this.votes) {
+                        if (this.votes[i] == 1) {
+                            c++
+                        }
+                    }
+                    return c;
+                },
+                nuetral() {
+                    let c = 0;
+                    for (let i in this.votes) {
+                        if (this.votes[i] == 0) {
+                            c++
+                        }
+                    }
+                    return c;
+                }
+            }
+        });
+
+        const vm = app.mount("#app");
+    </script>
+</html>

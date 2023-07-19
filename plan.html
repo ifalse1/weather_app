@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Plan</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="stuff-box cyan">
+        <h1>My Plan</h1>
+        <p><a href="index.html">Weather</a></p>
+    </div>
+    <div class="stuff-box cyan">
+        <h2>Phase 0: Requirements Specification</h2>
+        <p>
+            The focus behind this app is to create a website that will fetch the users ipgeolocation and then using that display the current weather and 5 day forecast for the area.
+            The user can then vote on if they think a condition is unlikely, nuetral, or likely for the forecast.
+        </p>
+        <p>
+            This assignment is to be written using the vue.js framework.
+        </p>
+        <p>
+            If there are any errors with fetching data those need to be displayed to the user. A loading message also needs to be displayed.
+        </p>
+    </div>
+    <div class="stuff-box cyan">
+        <h2>Phase 1: Design</h2>
+        <p>
+            The first step is to make the appropriate api calls and use a promise chain to recieve the data.
+            While it is fetching the data a loading message will be displayed to the user.
+            If any errors happen then display an appropriate error message
+        </p>
+        <p>
+            Once the data is recieved first display the location of the user.
+            The minimum data to be displayed is the latitude or longitude but also display the city, state, and country if applicable
+        </p>
+        <p>
+            Next display the current weather conditions. The data needed to be displayed:
+            <ul>
+                <li>Current Temperature</li>
+                <li>High Temperature</li>
+                <li>Low Temperature</li>
+                <li>Sky Conditions (i.e. clear, rainy, etc.)</li>
+                <li>The humidity</li>
+                <li>The pressure</li>
+            </ul>
+        </p>
+        <p>
+            The final thing to display is the 5 day 3 hour forecast.
+            Each of these display the same information as the current weather condition
+            The user can vote on wether these are likely, nuetral, or unlikely with each one of these changing the class using vue class binding.
+        </p>
+    </div>
+    <div class="stuff-box cyan">
+        <h2>Phase 2: Implementation</h2>
+        <p>
+            HTML
+        </p>
+        <p><code>
+            v-for = forecast in 5 day weather: create a div displaying forecast
+        </code></p>
+        <p>Vue.js code</p>
+        <p><code>
+            viewApp ({
+                data() {
+                    return {
+                        data needed
+                    }
+                }
+            })
+        </code></p>
+        <p><code>
+            created() {
+                fetch promise chain;
+            }
+        </code></p>
+        <p><code>
+            method: {
+                toggle() {
+                    toggle between class states
+                }
+            }
+        </code></p>
+        <p><code>
+            computed: {
+                gather information on user votes
+            }
+        </code></p>
+    </div>
+    <div class="stuff-box cyan">
+        <h2>Phase 3: Testing & Debugging</h2>
+        <p>
+            Tested blocking both apis that are being called and the appropriate error message for each.
+            Testing clicking mutliple votes
+            Also throttled the network to see how it would effect the website
+        </p>
+        <p>
+            I also soon realized I was not using vue class binding to change the class of the forecasts.
+        </p>
+    </div>
+    <div class="stuff-box cyan">
+        <h2>Phase 4: Deployment</h2>
+    </div>
+    <div class="stuff-box cyan">
+        <h2>Phase 5: Maintenance</h2>
+    </div>
+</body>
+</html>
